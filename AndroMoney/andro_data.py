@@ -51,20 +51,18 @@ class AndroDataMoney(AndroData):
         pivot_andromoney = self.andro_pivot_get()
         fx = AndroMoney.andro_fx.return_fx(std, edd)
 
-        if not 'JPY' in pivot_andromoney.columns:
-            pivot_andromoney['sum'] = pivot_andromoney['HKD'] / fx[1] + pivot_andromoney['SGD']
-            pivot_andromoney = pivot_andromoney.round(2)
-            print(pivot_andromoney)
-            return pivot_andromoney
+        has_jpy = 'JPY' in pivot_andromoney.columns
+        has_hkd = 'HKD' in pivot_andromoney.columns
 
-        elif not 'HKD' in pivot_andromoney.columns:
-            pivot_andromoney['sum'] = pivot_andromoney['JPY'] / fx[0] + pivot_andromoney['SGD']
-            pivot_andromoney = pivot_andromoney.round(2)
-            print(pivot_andromoney)
-            return pivot_andromoney
-
-        else:
+        if has_jpy and has_hkd:
             pivot_andromoney['sum'] = pivot_andromoney['HKD'] / fx[1] + pivot_andromoney['JPY'] / fx[0] + pivot_andromoney['SGD']
-            pivot_andromoney = pivot_andromoney.round(2)
-            print(pivot_andromoney)
-            return pivot_andromoney
+        elif has_jpy:
+            pivot_andromoney['sum'] = pivot_andromoney['JPY'] / fx[0] + pivot_andromoney['SGD']
+        elif has_hkd:
+            pivot_andromoney['sum'] = pivot_andromoney['HKD'] / fx[1] + pivot_andromoney['SGD']
+        else:
+            pivot_andromoney['sum'] = pivot_andromoney['SGD']
+
+        pivot_andromoney = pivot_andromoney.round(2)
+        print(pivot_andromoney)
+        return pivot_andromoney
