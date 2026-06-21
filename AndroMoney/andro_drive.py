@@ -47,7 +47,7 @@ def search_file(service, filename: str) -> str:
         FileNotFoundError: If no file with that name exists in Drive.
     """
     results = service.files().list(
-        q=f"name='{filename}' and trashed=false",
+        q=f"name='{filename}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
         fields="files(id, name)",
     ).execute()
     files = results.get("files", [])
@@ -66,7 +66,7 @@ def download_csv(service, file_id: str) -> io.StringIO:
     Returns:
         io.StringIO with the file content decoded as UTF-8.
     """
-    request = service.files().get_media(fileId=file_id)
+    request = service.files().export_media(fileId=file_id, mimeType="text/csv")
     buffer = io.BytesIO()
     downloader = MediaIoBaseDownload(buffer, request)
     done = False
