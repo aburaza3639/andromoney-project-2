@@ -15,17 +15,6 @@ from AndroMoney import andro_control
 import sys
 
 
-try:
-    args = sys.argv
-    if args[1].isdigit():
-        if args[2].isdigit():
-            start_date = args[1]
-            end_date = args[2]
-except:
-    start_date = "20251101"
-    end_date = "20251130"
-
-
 def func(start_date, end_date):
     """Run the full AndroMoney pipeline for the given date range.
 
@@ -33,9 +22,20 @@ def func(start_date, end_date):
         start_date: Period start in YYYYMMDD format (e.g. '20251101').
         end_date:   Period end   in YYYYMMDD format (e.g. '20251130').
     """
-
     andro_control.start_andro(start_date, end_date)
 
 
 if __name__ == '__main__':
+    try:
+        args = sys.argv
+        if args[1].isdigit() and args[2].isdigit():
+            start_date = args[1]
+            end_date = args[2]
+        else:
+            start_date = "20251201"
+            end_date = "20251231"
+    except IndexError:
+        start_date = "20251201"
+        end_date = "20251231"
+
     func(start_date, end_date)
