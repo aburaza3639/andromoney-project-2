@@ -2,7 +2,7 @@
 Data loading and transformation layer for AndroMoney transaction exports.
 
 Provides two classes:
-    AndroData       — base class handling file path resolution.
+    AndroData       — base class handling source resolution (local or Google Drive).
     AndroDataMoney  — subclass that reads, filters, pivots, and applies FX
                       conversion to produce a SGD-normalised expense summary.
 """
@@ -17,28 +17,41 @@ class AndroData(object):
     """Base class for AndroMoney data sources.
 
     Attributes:
-        xlsx_file:  Path (or file-like object) for the source Excel file.
+        xlsx_file:  Local path fallback used when USE_GOOGLE_DRIVE is False.
         start_date: Filter start in YYYYMMDD format.
         end_date:   Filter end   in YYYYMMDD format.
     """
 
     def __init__(self, xlsx_file=None, start_date=None, end_date=None):
-        if not xlsx_file:
-            self.xlsx_file = self.get_xlsx_file_path()
+        self.xlsx_file = xlsx_file or AndroMoney.settings.xlsx_FILE_PATH
         self.start_date = start_date
         self.end_date = end_date
 
-    @staticmethod
-    def get_xlsx_file_path():
-        """Return the source xlsx path from settings."""
-        return AndroMoney.settings.xlsx_FILE_PATH
+    def get_source(self):
+        """Return (source, format) for the pipeline data source.
+
+        Returns:
+            (io.StringIO, 'csv') when USE_GOOGLE_DRIVE is True —
+                downloads AndroMoney.csv from Google Drive into memory.
+            (str path, 'excel') when USE_GOOGLE_DRIVE is False —
+                uses the local xlsx path from settings.
+        """
+        if AndroMoney.settings.USE_GOOGLE_DRIVE:
+            import AndroMoney.andro_drive as _drive
+            from googleapiclient.discovery import build
+            creds = _drive.authenticate()
+            service = build("drive", "v3", credentials=creds)
+            file_id = _drive.search_file(service, AndroMoney.settings.DRIVE_FILENAME)
+            sio = _drive.download_csv(service, file_id)
+            return sio, "csv"
+        return self.xlsx_file, "excel"
 
 
 class AndroDataMoney(AndroData):
     """Reads and transforms AndroMoney transaction data."""
 
     def andro_rawdata_get(self):
-        """Load the full transaction history from the source Excel file.
+        """Load the full transaction history from the configured source.
 
         Drops the sentinel row (Date == 10100101) and parses the Date column
         to datetime.
@@ -46,12 +59,14 @@ class AndroDataMoney(AndroData):
         Returns:
             DataFrame with all transactions, Date as datetime.
         """
-        df = pd.read_excel(self.xlsx_file, index_col=0, header=1)
-        # 条件にマッチしたIndexを取得
-        drop_index = df.index[df['Date'] == 10100101]
-        # 条件にマッチしたIndexを削除
+        source, fmt = self.get_source()
+        if fmt == "csv":
+            df = pd.read_csv(source, index_col=0, header=1)
+        else:
+            df = pd.read_excel(source, index_col=0, header=1)
+        drop_index = df.index[df["Date"] == 10100101]
         df = df.drop(drop_index)
-        df['Date'] = pd.to_datetime(df['Date'].astype(str))
+        df["Date"] = pd.to_datetime(df["Date"].astype(str))
         return df
 
     def andro_data_get(self):
