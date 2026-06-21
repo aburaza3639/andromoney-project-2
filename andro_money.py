@@ -2,7 +2,7 @@
 Entry point for the AndroMoney expense report pipeline.
 
 Usage:
-    python andro_main.py <start_date> <end_date>
+    python andro_money.py <start_date> <end_date>
 
     start_date / end_date : 8-digit strings in YYYYMMDD format (e.g. 20251101).
     If omitted, defaults to 20251101–20251130.
@@ -19,8 +19,8 @@ def func(start_date, end_date):
     """Run the full AndroMoney pipeline for the given date range.
 
     Args:
-        start_date: Period start in YYYYMMDD format (e.g. '20251101').
-        end_date:   Period end   in YYYYMMDD format (e.g. '20251130').
+        start_date: Period start in YYYYMMDD format (e.g. '20251201').
+        end_date:   Period end   in YYYYMMDD format (e.g. '20251231').
     """
     andro_control.start_andro(start_date, end_date)
 
