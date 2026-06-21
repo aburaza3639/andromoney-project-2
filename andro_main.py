@@ -1,13 +1,20 @@
+"""
+Entry point for the AndroMoney expense report pipeline.
+
+Usage:
+    python andro_main.py <start_date> <end_date>
+
+    start_date / end_date : 8-digit strings in YYYYMMDD format (e.g. 20251101).
+    If omitted, defaults to 20251101–20251130.
+
+The script reads AndroMoney transaction data, builds a category pivot table
+with multi-currency FX conversion, and writes the result to the configured
+output Excel file (see AndroMoney/settings.py).
+"""
 from AndroMoney import andro_control
 import sys
-"""
-parser = argparse.ArgumentParser(description='Input money diary')
-parser.add_argument('start', metavar="start", type=str, help='start date of money diary input')
-parser.add_argument('end', metavar="end", type=str, help='end date of money diary input')
-args = parser.parse_args()
-start_date = args.start
-end_date = args.end
-"""
+
+
 try:
     args = sys.argv
     if args[1].isdigit():
@@ -18,7 +25,14 @@ except:
     start_date = "20251101"
     end_date = "20251130"
 
+
 def func(start_date, end_date):
+    """Run the full AndroMoney pipeline for the given date range.
+
+    Args:
+        start_date: Period start in YYYYMMDD format (e.g. '20251101').
+        end_date:   Period end   in YYYYMMDD format (e.g. '20251130').
+    """
 
     andro_control.start_andro(start_date, end_date)
 
