@@ -10,3 +10,7 @@ __pycache__/
 *.pyc
 .python-version
 tempCodeRunnerFile.py
+.superpowers/
+
+credentials.json
+token.json
