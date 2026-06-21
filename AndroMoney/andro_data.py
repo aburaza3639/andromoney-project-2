@@ -56,9 +56,15 @@ class AndroDataMoney(AndroData):
         Drops the sentinel row (Date == 10100101) and parses the Date column
         to datetime.
 
+        Caches the result on the instance so that multiple callers within the
+        same pipeline run do not trigger repeated OAuth + Drive download
+        round-trips.
+
         Returns:
             DataFrame with all transactions, Date as datetime.
         """
+        if hasattr(self, '_rawdata'):
+            return self._rawdata
         source, fmt = self.get_source()
         if fmt == "csv":
             df = pd.read_csv(source, index_col=0, header=1)
@@ -67,7 +73,8 @@ class AndroDataMoney(AndroData):
         drop_index = df.index[df["Date"] == 10100101]
         df = df.drop(drop_index)
         df["Date"] = pd.to_datetime(df["Date"].astype(str))
-        return df
+        self._rawdata = df
+        return self._rawdata
 
     def andro_data_get(self):
         """Filter raw transactions to the configured date range.

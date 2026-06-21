@@ -77,7 +77,7 @@ class TestSearchFile:
 
 class TestDownloadCsv:
     def test_returns_stringio_with_csv_content(self):
-        csv_content = b"col1,col2\nval1,val2\n"
+        csv_content = b"\xef\xbb\xbfcol1,col2\nval1,val2\n"
         mock_service = MagicMock()
 
         def fake_downloader(buffer, request):
@@ -92,4 +92,4 @@ class TestDownloadCsv:
             result = andro_drive.download_csv(mock_service, "abc123")
 
         assert isinstance(result, io.StringIO)
-        assert result.read() == csv_content.decode("utf-8")
+        assert result.read() == csv_content.decode("utf-8-sig")  # BOM stripped

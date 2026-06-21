@@ -32,6 +32,7 @@ def authenticate() -> Credentials:
             creds = flow.run_local_server(port=0)
         with open(settings.TOKEN_PATH, "w") as token:
             token.write(creds.to_json())
+        os.chmod(settings.TOKEN_PATH, 0o600)
     return creds
 
 
@@ -72,4 +73,4 @@ def download_csv(service, file_id: str) -> io.StringIO:
     while not done:
         _, done = downloader.next_chunk()
     buffer.seek(0)
-    return io.StringIO(buffer.read().decode("utf-8"))
+    return io.StringIO(buffer.read().decode("utf-8-sig"))

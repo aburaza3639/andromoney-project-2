@@ -54,10 +54,12 @@ class TestAndroRawdataGet:
         with patch.object(am, "get_source", return_value=(sio, "csv")), \
              patch("AndroMoney.andro_data.pd.read_csv", return_value=_sample_df()) as mock_read:
             result = am.andro_rawdata_get()
+            am.andro_rawdata_get()  # second call — must hit cache, not re-read
 
         mock_read.assert_called_once_with(sio, index_col=0, header=1)
         assert len(result) == 1
         assert pd.api.types.is_datetime64_any_dtype(result["Date"])
+        assert mock_read.call_count == 1
 
     def test_uses_read_excel_for_local_source(self):
         am = AndroDataMoney(start_date="20251201", end_date="20251231")
@@ -66,7 +68,9 @@ class TestAndroRawdataGet:
         with patch.object(am, "get_source", return_value=(local_path, "excel")), \
              patch("AndroMoney.andro_data.pd.read_excel", return_value=_sample_df()) as mock_read:
             result = am.andro_rawdata_get()
+            am.andro_rawdata_get()  # second call — must hit cache, not re-read
 
         mock_read.assert_called_once_with(local_path, index_col=0, header=1)
         assert len(result) == 1
         assert pd.api.types.is_datetime64_any_dtype(result["Date"])
+        assert mock_read.call_count == 1
