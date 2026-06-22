@@ -28,14 +28,14 @@
 
 | File | Change |
 |------|--------|
-| `AndroMoney/andro_drive.py` | **New** — Drive auth + search + download |
-| `AndroMoney/settings.py` | Add 4 new config fields |
-| `AndroMoney/andro_data.py` | Replace source resolution; branch on CSV vs Excel reader |
+| `andromoney/andro_drive.py` | **New** — Drive auth + search + download |
+| `andromoney/settings.py` | Add 4 new config fields |
+| `andromoney/andro_data.py` | Replace source resolution; branch on CSV vs Excel reader |
 | `.gitignore` | Add `credentials.json`, `token.json` |
 
 ### Files unchanged
 
-`andro_money.py`, `AndroMoney/andro_control.py`, `AndroMoney/andro_writer.py`, `AndroMoney/andro_fx.py`
+`andro_money.py`, `andromoney/andro_control.py`, `andromoney/andro_writer.py`, `andromoney/andro_fx.py`
 
 ### New dependencies
 
@@ -46,7 +46,7 @@ google-api-python-client
 
 ---
 
-## Module: `AndroMoney/andro_drive.py`
+## Module: `andromoney/andro_drive.py`
 
 Three stateless functions:
 
@@ -65,34 +65,38 @@ Three stateless functions:
 
 ### `download_csv(service, file_id: str) -> io.StringIO`
 
-- Streams file content via `files.get_media`.
+- Streams file content via `files.export_media` (Google Sheets export to CSV).
 - Returns an `io.StringIO` — no temp file written to disk.
 - The StringIO is passed directly to `pd.read_csv()` in `andro_data.py`.
 
 ---
 
-## Settings changes (`AndroMoney/settings.py`)
+## Settings changes (`andromoney/settings.py`)
 
-Four new fields added alongside existing paths:
+All constants follow `ALL_CAPS` PEP8 convention:
 
 ```python
+XLSX_FILE_PATH: str = "/path/to/AndroMoney.xlsx"   # local fallback
+TABLE_FILE_PATH: str = "/path/to/AndroMoney_Pivot.xlsx"
+XLSX2_FILE_PATH: str = "/path/to/credit-card.xlsx"
+
 # Google Drive integration
 USE_GOOGLE_DRIVE: bool = True
-DRIVE_FILENAME: str = "AndroMoney.csv"
+DRIVE_FILENAME: str = "AndroMoney"
 CREDENTIALS_PATH: str = "credentials.json"
 TOKEN_PATH: str = "token.json"
 ```
 
-- Set `USE_GOOGLE_DRIVE = False` to fall back to the existing local `xlsx_FILE_PATH` with no other changes.
+- Set `USE_GOOGLE_DRIVE = False` to fall back to the existing local `XLSX_FILE_PATH` with no other changes.
 - `CREDENTIALS_PATH` and `TOKEN_PATH` are relative to the project root (where the script is run from).
 
 ---
 
-## Data layer changes (`AndroMoney/andro_data.py`)
+## Data layer changes (`andromoney/andro_data.py`)
 
 ### `AndroData.get_source() -> tuple[source, str]`
 
-Replaces the role of the existing `get_xlsx_file_path()` static method. The `__init__` still sets `self.xlsx_file` from `settings.xlsx_FILE_PATH` for the local fallback; `get_source()` uses it when `USE_GOOGLE_DRIVE = False`.
+Replaces the role of the existing `get_xlsx_file_path()` static method. The `__init__` still sets `self.xlsx_file` from `settings.XLSX_FILE_PATH` for the local fallback; `get_source()` uses it when `USE_GOOGLE_DRIVE = False`.
 
 - When `USE_GOOGLE_DRIVE = True`:
   1. Calls `andro_drive.authenticate()` to get credentials.
@@ -101,7 +105,7 @@ Replaces the role of the existing `get_xlsx_file_path()` static method. The `__i
   4. Calls `andro_drive.download_csv(service, file_id)` to get an `io.StringIO`.
   5. Returns `(StringIO, 'csv')`.
 - When `USE_GOOGLE_DRIVE = False`:
-  - Returns `(settings.xlsx_FILE_PATH, 'excel')`.
+  - Returns `(settings.XLSX_FILE_PATH, 'excel')`.
 
 ### `AndroDataMoney.andro_rawdata_get()`
 

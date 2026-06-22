@@ -8,8 +8,8 @@ Provides two classes:
 """
 import pandas as pd
 import numpy as np
-import AndroMoney.andro_fx
-import AndroMoney.settings
+import andromoney.andro_fx
+import andromoney.settings
 import datetime
 
 
@@ -23,7 +23,7 @@ class AndroData(object):
     """
 
     def __init__(self, xlsx_file=None, start_date=None, end_date=None):
-        self.xlsx_file = xlsx_file or AndroMoney.settings.xlsx_FILE_PATH
+        self.xlsx_file = xlsx_file or andromoney.settings.XLSX_FILE_PATH
         self.start_date = start_date
         self.end_date = end_date
 
@@ -36,12 +36,12 @@ class AndroData(object):
             (str path, 'excel') when USE_GOOGLE_DRIVE is False —
                 uses the local xlsx path from settings.
         """
-        if AndroMoney.settings.USE_GOOGLE_DRIVE:
-            import AndroMoney.andro_drive as _drive
+        if andromoney.settings.USE_GOOGLE_DRIVE:
+            import andromoney.andro_drive as _drive
             from googleapiclient.discovery import build
             creds = _drive.authenticate()
             service = build("drive", "v3", credentials=creds)
-            file_id = _drive.search_file(service, AndroMoney.settings.DRIVE_FILENAME)
+            file_id = _drive.search_file(service, andromoney.settings.DRIVE_FILENAME)
             sio = _drive.download_csv(service, file_id)
             return sio, "csv"
         return self.xlsx_file, "excel"
@@ -115,7 +115,7 @@ class AndroDataMoney(AndroData):
         std = self.start_date[:4] + '-' + self.start_date[4:6] + '-' + self.start_date[6:]
         edd = self.end_date[:4] + '-' + self.end_date[4:6] + '-' + self.end_date[6:]
         pivot_andromoney = self.andro_pivot_get()
-        fx = AndroMoney.andro_fx.return_fx(std, edd)
+        fx = andromoney.andro_fx.return_fx(std, edd)
 
         has_jpy = 'JPY' in pivot_andromoney.columns
         has_hkd = 'HKD' in pivot_andromoney.columns

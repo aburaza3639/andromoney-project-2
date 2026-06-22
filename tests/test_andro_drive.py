@@ -2,8 +2,8 @@ import io
 import os
 import pytest
 from unittest.mock import patch, MagicMock
-import AndroMoney.settings as settings
-import AndroMoney.andro_drive as andro_drive
+import andromoney.settings as settings
+import andromoney.andro_drive as andro_drive
 
 
 class TestAuthenticate:
@@ -15,7 +15,7 @@ class TestAuthenticate:
         mock_creds = MagicMock()
         mock_creds.valid = True
 
-        with patch("AndroMoney.andro_drive.Credentials.from_authorized_user_file", return_value=mock_creds):
+        with patch("andromoney.andro_drive.Credentials.from_authorized_user_file", return_value=mock_creds):
             result = andro_drive.authenticate()
 
         assert result is mock_creds
@@ -31,8 +31,8 @@ class TestAuthenticate:
         mock_creds.refresh_token = "some-token"
         mock_creds.to_json.return_value = "{}"
 
-        with patch("AndroMoney.andro_drive.Credentials.from_authorized_user_file", return_value=mock_creds), \
-             patch("AndroMoney.andro_drive.Request"):
+        with patch("andromoney.andro_drive.Credentials.from_authorized_user_file", return_value=mock_creds), \
+             patch("andromoney.andro_drive.Request"):
             result = andro_drive.authenticate()
 
         mock_creds.refresh.assert_called_once()
@@ -48,7 +48,7 @@ class TestAuthenticate:
         mock_creds.valid = True
         mock_creds.to_json.return_value = "{}"
 
-        with patch("AndroMoney.andro_drive.InstalledAppFlow.from_client_secrets_file") as mock_flow_cls:
+        with patch("andromoney.andro_drive.InstalledAppFlow.from_client_secrets_file") as mock_flow_cls:
             mock_flow_cls.return_value.run_local_server.return_value = mock_creds
             result = andro_drive.authenticate()
 
@@ -88,7 +88,7 @@ class TestDownloadCsv:
             m.next_chunk = fake_next_chunk
             return m
 
-        with patch("AndroMoney.andro_drive.MediaIoBaseDownload", side_effect=fake_downloader):
+        with patch("andromoney.andro_drive.MediaIoBaseDownload", side_effect=fake_downloader):
             result = andro_drive.download_csv(mock_service, "abc123")
 
         assert isinstance(result, io.StringIO)

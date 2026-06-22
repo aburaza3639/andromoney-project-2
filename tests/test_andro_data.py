@@ -2,8 +2,8 @@ import io
 import pandas as pd
 import pytest
 from unittest.mock import patch, MagicMock
-import AndroMoney.settings as settings
-from AndroMoney.andro_data import AndroData, AndroDataMoney
+import andromoney.settings as settings
+from andromoney.andro_data import AndroData, AndroDataMoney
 
 
 def _sample_df():
@@ -25,10 +25,10 @@ class TestGetSource:
         mock_creds = MagicMock()
         mock_service = MagicMock()
 
-        with patch("AndroMoney.andro_drive.authenticate", return_value=mock_creds), \
+        with patch("andromoney.andro_drive.authenticate", return_value=mock_creds), \
              patch("googleapiclient.discovery.build", return_value=mock_service), \
-             patch("AndroMoney.andro_drive.search_file", return_value="file123"), \
-             patch("AndroMoney.andro_drive.download_csv", return_value=mock_sio):
+             patch("andromoney.andro_drive.search_file", return_value="file123"), \
+             patch("andromoney.andro_drive.download_csv", return_value=mock_sio):
             ad = AndroData(start_date="20251201", end_date="20251231")
             source, fmt = ad.get_source()
 
@@ -37,7 +37,7 @@ class TestGetSource:
 
     def test_returns_local_path_when_drive_disabled(self, monkeypatch):
         monkeypatch.setattr(settings, "USE_GOOGLE_DRIVE", False)
-        monkeypatch.setattr(settings, "xlsx_FILE_PATH", "/local/path.xlsx")
+        monkeypatch.setattr(settings, "XLSX_FILE_PATH", "/local/path.xlsx")
 
         ad = AndroData(start_date="20251201", end_date="20251231")
         source, fmt = ad.get_source()
@@ -52,7 +52,7 @@ class TestAndroRawdataGet:
         sio = io.StringIO()
 
         with patch.object(am, "get_source", return_value=(sio, "csv")), \
-             patch("AndroMoney.andro_data.pd.read_csv", return_value=_sample_df()) as mock_read:
+             patch("andromoney.andro_data.pd.read_csv", return_value=_sample_df()) as mock_read:
             result = am.andro_rawdata_get()
             am.andro_rawdata_get()  # second call — must hit cache, not re-read
 
@@ -66,7 +66,7 @@ class TestAndroRawdataGet:
         local_path = "/path/to/file.xlsx"
 
         with patch.object(am, "get_source", return_value=(local_path, "excel")), \
-             patch("AndroMoney.andro_data.pd.read_excel", return_value=_sample_df()) as mock_read:
+             patch("andromoney.andro_data.pd.read_excel", return_value=_sample_df()) as mock_read:
             result = am.andro_rawdata_get()
             am.andro_rawdata_get()  # second call — must hit cache, not re-read
 
