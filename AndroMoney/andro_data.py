@@ -75,7 +75,7 @@ class AndroDataMoney(AndroData):
             DataFrame pivot with categories as index and currencies as columns.
         """
         lst = ['住居費', '食料品', '光熱費', '通信費', '保険', '年金', '日常生活', '医療関連', '教育関連', '交通関係',
-               'アパレル', '人間関係', 'レジャー・娯楽', '電子製品・モバイル', '自動車・バイク', '奨学金', '仕送り', 'その他', 'Business Expense']
+               'アパレル', '人間関係', 'レジャー・娯楽', '電子製品・モバイル', '自動車・バイク', '奨学金', '仕送り', 'その他', 'Business Expense', '資金運用']
         pivot_andromoney = pd.pivot_table(self.andro_data_get(), index=['Category'], columns='Currency', values='Amount',
                                           aggfunc=np.sum, fill_value=0)
         return pivot_andromoney.reindex(lst, axis='index', fill_value=0)
