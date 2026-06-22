@@ -9,13 +9,13 @@ Usage:
 
 The script reads AndroMoney transaction data, builds a category pivot table
 with multi-currency FX conversion, and writes the result to the configured
-output Excel file (see AndroMoney/settings.py).
+output Excel file (see andromoney/settings.py).
 """
-from AndroMoney import andro_control
+from andromoney import andro_control
 import sys
 
 
-def func(start_date, end_date):
+def run(start_date, end_date):
     """Run the full AndroMoney pipeline for the given date range.
 
     Args:
@@ -38,4 +38,4 @@ if __name__ == '__main__':
         start_date = "20251201"
         end_date = "20251231"
 
-    func(start_date, end_date)
+    run(start_date, end_date)

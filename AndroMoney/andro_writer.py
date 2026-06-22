@@ -1,32 +1,32 @@
 """
 Excel output writers for AndroMoney pivot and raw transaction data.
 
-Writes to two configured output files (see AndroMoney/settings.py):
+Writes to two configured output files (see andromoney/settings.py):
     TABLE_FILE_PATH  — main pivot + raw data workbook (Sheet1 / Sheet2).
-    xlsx2_file_path  — secondary credit-card history workbook (家計簿 sheet).
+    XLSX2_FILE_PATH  — secondary credit-card history workbook (家計簿 sheet).
 """
 import datetime
 import pandas as pd
 import openpyxl
-import AndroMoney.settings
+import andromoney.settings
 
-xlsx_file_path = AndroMoney.settings.TABLE_FILE_PATH
-xlsx2_file_path = AndroMoney.settings.xlsx2_file_path
+XLSX_FILE_PATH = andromoney.settings.TABLE_FILE_PATH
+XLSX2_FILE_PATH = andromoney.settings.XLSX2_FILE_PATH
 
 
-def andro_pivotwriter(pivot_andromoney, df):
+def andro_pivot_writer(pivot_andromoney, df):
     """Write the pivot table and raw transactions to the main output workbook.
 
     Args:
         pivot_andromoney: Category × currency pivot DataFrame (with 'sum' col).
         df:               Full raw transaction DataFrame.
     """
-    with pd.ExcelWriter(xlsx_file_path, engine='openpyxl', mode='w+') as ew:
+    with pd.ExcelWriter(XLSX_FILE_PATH, engine='openpyxl', mode='w+') as ew:
         pivot_andromoney.to_excel(ew, sheet_name='Sheet1', startrow=3, startcol=7)
         df.to_excel(ew, sheet_name='Sheet2')
 
 
-def andro_excelwriter(pivot_andromoney, start_date=None):
+def andro_excel_writer(pivot_andromoney, start_date=None):
     """Write pivot values into the matching month column of the 家計簿 sheet.
 
     Scans row 17 of the credit-card workbook to find the column whose header
@@ -37,7 +37,7 @@ def andro_excelwriter(pivot_andromoney, start_date=None):
         start_date:       Period start as 'YYYY-MM-DD'.
     """
     # Retrieve year-date on table to identify new column
-    df3 = pd.read_excel(xlsx2_file_path, sheet_name="家計簿", skiprows=16, nrows=1, header=None)
+    df3 = pd.read_excel(XLSX2_FILE_PATH, sheet_name="家計簿", skiprows=16, nrows=1, header=None)
     strd = datetime.datetime.strptime(start_date, "%Y-%m-%d")
 
     for count, (a, b) in enumerate(df3.iteritems(), start=1):
@@ -52,8 +52,8 @@ def input_data(pivot_andromoney, cell):
         pivot_andromoney: Category × currency pivot DataFrame (with 'sum' col).
         cell:             1-based column index of the target month column.
     """
-    wb = openpyxl.load_workbook(xlsx2_file_path)
+    wb = openpyxl.load_workbook(XLSX2_FILE_PATH)
     ws = wb["家計簿"]
     ws = [ws.cell(row=18+i, column=cell, value=pivot_andromoney.iloc[0+i, 3]) for i in range(19)]
-    wb.save(xlsx2_file_path)
+    wb.save(XLSX2_FILE_PATH)
     wb.close()
