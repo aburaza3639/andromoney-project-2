@@ -11,7 +11,7 @@ The script reads AndroMoney transaction data, builds a category pivot table
 with multi-currency FX conversion, and writes the result to the configured
 output Excel file (see andromoney/settings.py).
 """
-from andromoney import andro_control
+from .andromoney import andro_control
 import sys
 
 
@@ -27,15 +27,21 @@ def run(start_date, end_date):
 
 if __name__ == '__main__':
     try:
+        
         args = sys.argv
-        if args[1].isdigit() and args[2].isdigit():
+
+        if len(args) == 1:
+            start_date = "20251201"
+            end_date = "20251231"                        
+        elif len(args) ==3:
+            if not args[1].isdigit() or not args[2].isdigit():
+                raise ValueError("Invalid date format. Please use YYYYMMDD format.")
             start_date = args[1]
             end_date = args[2]
         else:
-            start_date = "20251201"
-            end_date = "20251231"
-    except IndexError:
-        start_date = "20251201"
-        end_date = "20251231"
-
-    run(start_date, end_date)
+            raise ValueError("Invalid number of arguments. Usage: python andro_money.py <start_date> <end_date>")
+        run(start_date, end_date)
+        
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)

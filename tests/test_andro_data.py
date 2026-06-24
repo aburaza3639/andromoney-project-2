@@ -2,8 +2,8 @@ import io
 import pandas as pd
 import pytest
 from unittest.mock import patch, MagicMock
-import andromoney.settings as settings
-from andromoney.andro_data import AndroData, AndroDataMoney
+import src.andro_money.andromoney.settings as settings
+from src.andro_money.andromoney.andro_data import AndroData, AndroDataMoney
 
 
 def _sample_df():

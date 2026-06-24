@@ -2,8 +2,8 @@ import io
 import os
 import pytest
 from unittest.mock import patch, MagicMock
-import andromoney.settings as settings
-import andromoney.andro_drive as andro_drive
+import src.andro_money.andromoney.settings as settings
+import src.andro_money.andromoney.andro_drive as andro_drive
 
 
 class TestAuthenticate:
