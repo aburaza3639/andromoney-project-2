@@ -3,6 +3,7 @@ Google Drive authentication and CSV download for AndroMoney pipeline.
 """
 import io
 import os
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -24,8 +25,11 @@ def authenticate() -> Credentials:
         creds = Credentials.from_authorized_user_file(settings.TOKEN_PATH, SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except RefreshError:
+                creds = None
+        if not creds:
             flow = InstalledAppFlow.from_client_secrets_file(
                 settings.CREDENTIALS_PATH, SCOPES
             )
